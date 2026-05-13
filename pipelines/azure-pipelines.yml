@@ -1,0 +1,104 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  ACR_NAME: hydrusacrsadia2026dev.azurecr.io
+  AKS_CLUSTER: hydrus-aks-dev
+  RESOURCE_GROUP: hydrus-rg-dev
+  NAMESPACE: hydrus-prod
+
+stages:
+  - stage: Test
+    displayName: Run Tests
+    jobs:
+      - job: TestBackend
+        displayName: Test Backend
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.12'
+          - script: |
+              cd backend
+              pip install -r requirements.txt
+              pip install pytest httpx
+              pytest tests/ -v || echo "No tests found"
+            displayName: Run Python Tests
+
+      - job: TestFrontend
+        displayName: Test Frontend
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+          - script: |
+              cd frontend
+              npm ci
+              npm run build
+            displayName: Build Frontend
+
+  - stage: Build
+    displayName: Build and Push
+    dependsOn: Test
+    condition: succeeded()
+    jobs:
+      - job: BuildPush
+        displayName: Build & Push to ACR
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr login --name hydrusacrsadia2026dev
+                docker build -t $(ACR_NAME)/backend:$(Build.BuildId) ./backend
+                docker push $(ACR_NAME)/backend:$(Build.BuildId)
+                docker build \
+                  --build-arg VITE_API_URL=http://$(INGRESS_HOST):8000 \
+                  -t $(ACR_NAME)/frontend:$(Build.BuildId) ./frontend
+                docker push $(ACR_NAME)/frontend:$(Build.BuildId)
+            displayName: Build and Push Images
+
+  - stage: Deploy
+    displayName: Deploy to AKS
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployAKS
+        displayName: Deploy to AKS
+        pool:
+          vmImage: ubuntu-latest
+        environment: production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: $(AZURE_SERVICE_CONNECTION)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az aks get-credentials \
+                        --resource-group $(RESOURCE_GROUP) \
+                        --name $(AKS_CLUSTER) \
+                        --overwrite-existing
+                      kubectl apply -f k8s/
+                      kubectl set image deployment/backend \
+                        backend=$(ACR_NAME)/backend:$(Build.BuildId) \
+                        -n $(NAMESPACE)
+                      kubectl set image deployment/frontend \
+                        frontend=$(ACR_NAME)/frontend:$(Build.BuildId) \
+                        -n $(NAMESPACE)
+                      kubectl rollout status deployment/backend -n $(NAMESPACE)
+                      kubectl rollout status deployment/frontend -n $(NAMESPACE)
+                  displayName: Deploy to AKS

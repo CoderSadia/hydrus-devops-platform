@@ -1,0 +1,10 @@
+resource_group_name   = "hydrus-rg"
+location              = "East US"
+environment           = "dev"
+cluster_name          = "hydrus-aks"
+acr_name              = "hydrusacrsadia2026"
+node_count            = 1
+node_vm_size          = "Standard_DC2s_v3"
+vnet_name             = "hydrus-vnet"
+vnet_address_space    = "10.0.0.0/16"
+subnet_address_prefix = "10.0.1.0/24"

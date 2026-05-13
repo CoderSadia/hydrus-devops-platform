@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: hydrus-db
+    environment:
+      POSTGRES_DB: hydrusdb
+      POSTGRES_USER: hydrus
+      POSTGRES_PASSWORD: hydrus123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydrus -d hydrusdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hydrus-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hydrus-backend
+    environment:
+      DATABASE_URL: postgresql://hydrus:hydrus123@db:5432/hydrusdb
+      SECRET_KEY: hydrus-secret-key-2026
+      ENVIRONMENT: production
+      CORS_ORIGINS: http://localhost:80,http://frontend:80
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hydrus-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+    container_name: hydrus-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - hydrus-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  hydrus-network:
+    driver: bridge

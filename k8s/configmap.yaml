@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hydrus-config
+  namespace: hydrus-prod
+data:
+  ENVIRONMENT: "production"
+  DATABASE_HOST: "postgres-service"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "hydrusdb"
+  CORS_ORIGINS: "http://frontend-service:80"
+  API_URL: "http://backend-service:8000"
