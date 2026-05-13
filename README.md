@@ -28,6 +28,7 @@ CI/CD: GitHub Actions → ACR → AKS
 
 ## Project Structure
 
+```
 hydrus-devops-platform/
 ├── README.md
 ├── docker-compose.yml
@@ -48,6 +49,10 @@ hydrus-devops-platform/
 │   ├── variables.tf
 │   ├── outputs.tf
 │   ├── provider.tf
+│   ├── modules/
+│   │   ├── aks/
+│   │   ├── acr/
+│   │   └── network/
 │   └── environments/
 │       ├── dev.tfvars
 │       ├── stage.tfvars
@@ -62,8 +67,9 @@ hydrus-devops-platform/
 │   ├── ingress.yaml
 │   └── hpa.yaml
 └── pipelines/
-├── github-actions.yml
-└── azure-pipelines.yml
+    ├── github-actions.yml
+    └── azure-pipelines.yml
+```
 
 ## Quick Start
 
