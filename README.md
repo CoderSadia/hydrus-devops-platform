@@ -195,6 +195,14 @@ kubectl logs -f deployment/backend -n hydrus-prod
 - [x] Architecture diagram
 - [x] Troubleshooting and monitoring documentation
 
+## Docker Hub Images
+
+| Image | Link |
+|-------|------|
+| Backend | https://hub.docker.com/r/codersadia/hydrus-devops-platform-backend |
+| Frontend | https://hub.docker.com/r/codersadia/hydrus-devops-platform-frontend |
+
+
 ## Author
 
 Sadia | DevOps Engineer Assessment | Hydrus Digital BD
