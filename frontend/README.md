@@ -1,16 +1,46 @@
-# React + Vite
+# Hydrus DevOps Platform - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite + Tailwind CSS dark theme dashboard for Hydrus DevOps Platform.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Real-time service health monitoring
+- CI/CD pipeline status
+- AKS resource usage (CPU, Memory, Storage)
+- API response time and error rate charts
+- Dark theme GitHub-style UI
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 18
+- Vite 8
+- Tailwind CSS 3
+- Recharts
+- Axios
 
-## Expanding the ESLint configuration
+## Run Locally
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Visit: http://localhost:5173
+
+## Build for Production
+
+```bash
+npm run build
+```
+
+## Environment Variables
+
+VITE_API_URL=http://localhost:8000
+
+
+## Docker
+
+```bash
+docker build -t hydrus-frontend .
+docker run -p 80:80 hydrus-frontend
+```
